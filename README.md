@@ -1,86 +1,105 @@
-YouTube Live Auto-Seek Fix
-Overview
-When watching YouTube livestreams, buffering or temporary network drops can cause playback to fall several seconds (or more) behind the live edge.
-YouTube’s default “Live” button turns grey when this happens, and you may end up missing real-time events — a major problem for time-sensitive content like trading streams, sports, or live news.
+YouTube Live Auto-Seek — Stay Truly Live on Streams
+📌 Overview
 
-This JavaScript snippet automatically detects when a YouTube livestream is behind the live edge and gently seeks forward to keep playback in sync.
-Unlike simple auto-seek scripts, this version:
+YouTube livestreams often fall a few seconds behind the true live edge due to network hiccups, buffering, or YouTube’s own adaptive latency controls.
+This delay means you might miss critical moments — whether it’s a fast-moving gaming stream, a live trading chart, or breaking news.
 
-Only runs on livestreams (no effect on normal videos).
+This script automatically detects when you’ve drifted behind the live edge and intelligently seeks forward to keep you perfectly in sync — without buffering or accidentally skipping to the end screen.
 
-Avoids seeking too far ahead (which could cause end screens or autoplay triggers).
+It’s designed for use inside Enhancer for YouTube or any custom JavaScript injector in browsers like Brave, Chrome, or Firefox.
 
-Checks YouTube’s own live-dot status before deciding to seek.
+🚀 Features
 
-Uses a dynamic, self-adjusting offset to avoid excessive buffering.
+Live-only detection — Works exclusively on YouTube livestreams, leaving regular videos untouched.
 
-Prevents repeated unnecessary seeks when playback is already at the live edge.
+Accurate live position tracking — Calculates the real live edge in seconds, not just YouTube’s guess.
 
-Features
-✅ Livestream detection — Works only on videos where isLiveContent is true.
+Safe seeking — Avoids the “black screen” or “end card” issue by never overshooting the buffer.
 
-✅ Safe forward seeking — Stops just short of the actual live point to avoid triggering YouTube’s end screen.
+Dynamic offset tuning — Learns the safest seek distance to prevent buffering after each jump.
 
-✅ Dynamic offset tuning — Learns the best “seconds behind live” threshold for your connection.
+No over-seeking — Won’t move forward if the stream is already live (red dot active).
 
-✅ Minimal disruption — Seeks only when delay exceeds 2–3 seconds.
+Minimal disruption — Seeks happen only when you’re a few seconds late, so you never miss dialogue or important audio.
 
-✅ No false triggers — Won’t skip forward if the red “Live” dot is already active.
+Customizable thresholds — Fine-tune lag tolerance and safety offsets for your own connection.
 
-Why this is needed
-YouTube’s livestream player does not automatically return to the live edge after a buffering delay.
-While you can click the red “Live” button manually, that means:
+🛠 How It Works
 
-You risk missing moments if you don’t notice the delay immediately.
+Live stream detection
+The script checks the YouTube player to confirm if the current video is a livestream (via internal metadata).
 
-In fast-paced livestreams (e.g., market trades, gameplays), even 3–4 seconds delay can be a big deal.
+Delay monitoring
+It continuously compares:
 
-This script automates that process, ensuring you always stay truly live.
+The player’s current playback position (currentTime)
 
-Installation
-Option 1 — Using Enhancer for YouTube (recommended)
-Install Enhancer for YouTube in Brave, Chrome, or Firefox.
+The real stream live edge (seekableEnd)
+This difference is your lag.
 
-Go to the extension’s Settings.
+Seek decision
+If lag exceeds a set threshold (default: 2–3 seconds), the script seeks forward to the safe edge:
 
-Find the “Custom JavaScript” section.
+liveEdgeTime - safetyOffset
 
-Paste the entire script (autoseek.js) into the box.
 
-Save settings and refresh YouTube.
+The safety offset prevents hitting an unbuffered segment and causing a stall.
 
-Option 2 — Using a Custom Script Injector
-Install a userscript manager like Tampermonkey.
+Dynamic offset adjustment
+If a seek causes buffering, the offset automatically increases next time.
+If no buffering occurs for a while, the offset is reduced for a tighter live sync.
 
-Create a new script.
+Cooldown system
+After a seek, the script waits a short period before seeking again, preventing rapid jumps.
 
-Paste the code into it.
+📂 Installation
+Option 1: Enhancer for YouTube (Recommended)
 
-Save and enable.
+Install Enhancer for YouTube extension.
 
-How it works
-Detect livestream — The script checks ytplayer.config.args or ytInitialPlayerResponse to confirm the video is live.
+Go to Enhancer settings → Custom scripts.
 
-Monitor playback — Every 1 second, it compares:
+Paste the full script into the text area.
 
-video.duration (live edge position)
+Save and refresh YouTube.
 
-video.currentTime (your playback position)
+Option 2: Any JS Injector
 
-Seek logic — If the delay exceeds the dynamic threshold (starting at 3 seconds), it seeks forward to duration - safeOffset.
+Use an extension like Tampermonkey, Violentmonkey, or Custom JavaScript for Websites 2.
 
-Offset tuning — If seeking causes buffering, the script slightly increases the safe offset. If there’s no buffer, it reduces it for tighter sync.
+Create a new script, paste the code, and set it to run on https://www.youtube.com/*.
 
-Known limitations
-Cannot prevent buffering entirely if your internet connection is unstable.
+⚙️ Configuration
 
-May need a short warm-up period for dynamic offset to stabilize.
+Inside the code, you’ll find a CONFIG object:
 
-If YouTube changes its livestream player API, minor adjustments may be needed.
+const CONFIG = {
+    LAG_THRESHOLD: 2.5, // seconds behind live before seeking
+    SAFETY_OFFSET: 1.2, // seconds away from edge after seek
+    COOLDOWN_MS: 5000,  // min time between seeks
+    DEBUG_UI: false     // turn debug overlay on/off
+};
 
-License
-This script is free to use, modify, and share under the MIT License. Attribution appreciated but not required.
 
-Short GitHub tagline:
+You can edit these values to suit your internet connection and tolerance for delay.
 
-Keep YouTube livestreams perfectly in sync with the live edge — no more falling behind due to buffering.
+📸 Example Use Cases
+
+Trading streams — Never miss a candlestick or sudden price spike.
+
+Sports — Stay perfectly synced to live commentary and action.
+
+Esports & Gaming — React to plays in real time without delay.
+
+Live News — Hear breaking news the instant it’s broadcast.
+
+🔍 Known Limitations
+
+If your network has high packet loss or extreme jitter, the script may not be able to maintain perfect live sync without occasional buffering.
+
+Works only on YouTube’s standard web player — not on embedded players or smart TV apps.
+
+📜 License
+
+This project is released under the MIT License.
+You’re free to use, modify, and share it.
